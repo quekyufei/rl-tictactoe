@@ -1,7 +1,7 @@
 import pickle
 import random
 
-from player import Player
+from .player import Player
 
 class SimpleRlBot(Player):
 	'''

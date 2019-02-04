@@ -1,8 +1,8 @@
 import sys
 
-from game_manager import *
-from player import *
-from simple_rl_bot import *
+from rl_ttt.game_manager import *
+from rl_ttt.player import *
+from rl_ttt.simple_rl_bot import *
 
 def main(argv):
 	if 'H' in argv:
