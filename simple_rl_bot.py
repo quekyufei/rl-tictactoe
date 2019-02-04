@@ -1,14 +1,23 @@
 import pickle
 import random
 
-class rl_bot():
-	# create new states based on the possible moves (all the "-")
-	# idea: upon seeing new state, asmultiplier it value of 0.5
-	# think about how to update the value after game ends
+from player import Player
+
+class SimpleRlBot(Player):
+	'''
+	Simple RL player that stores a value for each state that it has seem before.
+	At each turn, it looks through all legal states and their associated values.
+	Greedily chooses action to take.
+	
+	Throughout a game, it will store a history of states that it saw
+	Depending on the result, it will increment or decrement the value in it's dictionary for the states seen.
+	The increase/decrease is determined by the learning rate, and the multiplier for the results
+	'''
+
 
 	def __init__(self, mark, learning_rate, pickle_file):
 
-		self.mark = mark
+		Player.__init__(self, mark)
 		self.move_history = []
 		self.learning_rate = learning_rate
 		self.pickle_file = pickle_file
@@ -17,37 +26,20 @@ class rl_bot():
 			self.state_dict = pickle.load(f)
 
 	def get_move(self, board):
-		board_string = ''.join(board)
+		legal_moves = board.get_legal_moves()
 
-		# get possible next states
-		legal_states = self.get_legal_states(board_string)
 		# get list of all states with the highest value 
-		best_states = self.get_best_states(legal_states)
-
-		if len(best_states) == 0:
-			return board
+		best_states = self.get_best_states(legal_moves, board)
 
 		# randomly choose a state if there are ties in value
 		choice = random.choice(best_states)[0]
 		
-		self.move_history.append(choice)
+		self.move_history.append(self.move_and_get_string(board.board, choice))
 
-		# returns state after chosen move. converts to list of characters
-		return list(choice)
+		# returns chosen move
+		return choice
 
-	def get_legal_states(self, board):
-		# Looks for all blank tiles in board.
-		# For each blank tile, replaces the '-' with player's mark
-		# Returns list consisting of the new board states (each as a string) after making a move.
-		state_list = []
-		for i in range(len(board)):
-			if board[i] == '-':
-				tmp = board[:i] + self.mark + board[i+1:]
-				state_list.append(tmp)
-
-		return state_list
-
-	def get_best_states(self, states):
+	def get_best_states(self, moves, board):
 		'''
 		Input: states - list of possible states after bot makes a legal move
 
@@ -59,8 +51,9 @@ class rl_bot():
 		'''
 		score_list = []
 
-		for state in states:
+		for move in moves:
 			# retrieve score from dictionary; if entry does not exist, initialise with value of 0.5
+			state = self.move_and_get_string(board.board, move)
 			if state in self.state_dict:
 				score = self.state_dict[state]
 			else:
@@ -68,22 +61,29 @@ class rl_bot():
 				score = 0.5
 
 			if len(score_list) == 0:
-				score_list.append((state, score))
+				score_list.append((move, score))
 			else:
 				# if the current state's score is more than the score of the elements in the list
 				if score > score_list[0][1]:
-					score_list = [(state, score)]
+					score_list = [(move, score)]
 				# if it is the same, add on to the list
 				elif score == score_list[0][1]:
-					score_list.append((state,score))
+					score_list.append((move,score))
 
 		return score_list
+
+	def move_and_get_string(self, board, move):
+		tmp = list(board)
+		tmp[move] = self.mark
+		return str(tmp)
 
 	def game_ended(self, result):
 		'''
 		Update weights for each state
 		Currently simply adds / subtracts the learning rate value to / from all moves that led to the win / loss.
 		'''
+		Player.game_ended(self, result)
+
 		if result == 'win':
 			multiplier = 1
 		elif result == 'loss':
@@ -95,6 +95,9 @@ class rl_bot():
 			self.state_dict[move] += multiplier * self.learning_rate
 
 		self.move_history = []
+
+	def all_done(self):
+		self.save_dictionary()
 
 	def save_dictionary(self):
 		with open(self.pickle_file,'wb') as f:
