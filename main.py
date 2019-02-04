@@ -49,7 +49,7 @@ def get_player(player, mark):
 		return HumanPlayer(mark)
 
 	elif player == 'S':
-		return SimpleRlBot(mark, 0.001, mark + '_player.pickle')
+		return SimpleRlBot(mark, 0.001, 'data_files/' + mark + '_player.pickle')
 
 if __name__ == '__main__':
 	# command line usage: python3 filename.py player1 player2 num_iterations
