@@ -18,7 +18,7 @@ class SimpleRlBot(Player):
 	def __init__(self, mark, learning_rate, pickle_file):
 
 		Player.__init__(self, mark)
-		self.move_history = []
+		self.last_move = None
 		self.learning_rate = learning_rate
 		self.pickle_file = pickle_file
 
@@ -29,7 +29,7 @@ class SimpleRlBot(Player):
 		legal_moves = board.get_legal_moves()
 
 		# get list of all states with the highest value 
-		best_states = self.get_best_states(legal_moves, board)
+		best_states = self.get_best_states(legal_moves)
 
 		# randomly choose a state if there are ties in value
 		choice = random.choice(best_states)[0]
@@ -39,7 +39,7 @@ class SimpleRlBot(Player):
 		# returns chosen move
 		return choice
 
-	def get_best_states(self, moves, board):
+	def get_best_states(self, legal_moves):
 		'''
 		Input: states - list of possible states after bot makes a legal move
 
@@ -49,28 +49,29 @@ class SimpleRlBot(Player):
 
 		Returns a list of (state, value) tuples, all of which have the same score.
 		'''
-		score_list = []
+		best_moves_list = []
 
-		for move in moves:
+		for move in legal_moves:
 			# retrieve score from dictionary; if entry does not exist, initialise with value of 0.5
-			state = self.move_and_get_string(board.board, move)
+			state = move.state
 			if state in self.state_dict:
-				score = self.state_dict[state]
+				move.value = self.state_dict[state]
 			else:
 				self.state_dict[state] = 0.5
-				score = 0.5
+				move.value = 0.5
 
 			if len(score_list) == 0:
-				score_list.append((move, score))
+				best_moves_list.append(move)
 			else:
-				# if the current state's score is more than the score of the elements in the list
-				if score > score_list[0][1]:
-					score_list = [(move, score)]
+				# if the current state's score is more than the score of the Moves in the list
+				if move.value > best_moves_list[0].value:
+					best_moves_list = [move]
 				# if it is the same, add on to the list
-				elif score == score_list[0][1]:
-					score_list.append((move,score))
+				elif move.value == best_moves_list[0].value:
+					best_moves_list.append(move)
+				# else do nothing
 
-		return score_list
+		return best_moves_list
 
 	def move_and_get_string(self, board, move):
 		tmp = list(board)
