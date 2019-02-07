@@ -57,7 +57,7 @@ def get_player(player, mark):
 if __name__ == '__main__':
 	# command line usage: python3 filename.py player1 player2 num_iterations
 
-	# H = Human, S = Simple
+	# H = Human, S = Simple, R = Random
 	valid_players = ['H', 'S', 'R']
 
 	try:

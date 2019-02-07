@@ -8,7 +8,7 @@ class Player():
 		self.num_draws = 0
 
 	def get_move(self, board):
-		# returns integer corresponding to move
+		# returns move object corresponding to move
 		pass
 
 	def game_ended(self, result):

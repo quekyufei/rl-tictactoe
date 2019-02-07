@@ -15,7 +15,8 @@ class Board():
 				return True
 
 	def has_draw(self):
-		if not any([True for i in self.board if i == '-']):
+		# if there are no more blank spaces left
+		if not '-' in self.board:
 			return True
 		else:
 			return False
@@ -34,7 +35,6 @@ class Board():
 
 	def make_move(self, move):
 		# takes in Move object
-		# replace '-' with player's symbol
 		self.board = list(move.state)
 		if self.verbose:
 			self.print()
@@ -70,6 +70,8 @@ class Move():
 		if not self.exploratory:
 			self.value = self.value + alpha * (next_move_value - self.value)
 			state_dict[self.state] = self.value
+		else:
+			self.value = next_move_value
 		# recursively updates value of every move
 		if self.previous_move != None:
 			self.previous_move.update_values(self.value, alpha, state_dict)
