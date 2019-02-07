@@ -15,17 +15,27 @@ class Board():
 				return True
 
 	def has_draw(self):
-		if not any([True for i in self.board if i == '-']):
+		# if there are no more blank spaces left
+		if not '-' in self.board:
 			return True
 		else:
 			return False
 
-	def get_legal_moves(self):
-		return [ i for i in range(9) if self.board[i] == '-' ]
+	def get_legal_moves(self, mark):
+		list_positions = [ i for i in range(9) if self.board[i] == '-' ]
+		moves_list = []
+		for position in list_positions:
+			# create Move object and append it to list
+			moves_list.append( Move(list(self.board), position, mark) )
 
-	def make_move(self, move, mark):
-		# replace '-' with player's symbol
-		self.board[move] = mark
+		return moves_list
+
+	def get_move_object(self, position, mark):
+		return Move(self.board, position, mark)
+
+	def make_move(self, move):
+		# takes in Move object
+		self.board = list(move.state)
 		if self.verbose:
 			self.print()
 
@@ -46,3 +56,28 @@ class Board():
 		self.board = ['-']*9
 		if self.verbose:
 			self.print()
+
+class Move():
+	def __init__(self, board, position, mark):
+		board[position] = mark
+		self.state = ''.join(board)
+		self.exploratory = False
+		self.previous_move = None
+		self.value = None
+
+	def update_values(self, next_move_value, alpha, state_dict):
+		# TD learning value update
+		if not self.exploratory:
+			self.value = self.value + alpha * (next_move_value - self.value)
+			state_dict[self.state] = self.value
+		else:
+			self.value = next_move_value
+		# recursively updates value of every move
+		if self.previous_move != None:
+			self.previous_move.update_values(self.value, alpha, state_dict)
+
+	def set_previous_move(self, move):
+		self.previous_move = move
+
+	def set_exploratory(self, boolean):
+		self.exploratory = boolean

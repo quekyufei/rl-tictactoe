@@ -1,3 +1,5 @@
+import random
+
 class Player():
 	def __init__(self, mark):
 		self.mark = mark
@@ -6,7 +8,7 @@ class Player():
 		self.num_draws = 0
 
 	def get_move(self, board):
-		# returns integer corresponding to move
+		# returns move object corresponding to move
 		pass
 
 	def game_ended(self, result):
@@ -36,4 +38,13 @@ class HumanPlayer(Player):
 
 			# square is not blank
 			if board.is_move_legal(user_in):
-				return user_in
+				return board.get_move_object(user_in, self.mark)
+			else:
+				print('Move is not legal.')
+
+class RandomPlayer(Player):
+	def __init__(self, mark):
+		Player.__init__(self, mark)
+
+	def get_move(self, board):
+		return random.choice(board.get_legal_moves(self.mark))
