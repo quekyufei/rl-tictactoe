@@ -29,9 +29,13 @@ class Board():
 
 		return moves_list
 
-	def make_move(self, move, mark):
+	def get_move_object(self, position, mark):
+		return Move(self.board, position, mark)
+
+	def make_move(self, move):
+		# takes in Move object
 		# replace '-' with player's symbol
-		self.board[move] = mark
+		self.board = list(move.state)
 		if self.verbose:
 			self.print()
 
@@ -56,16 +60,19 @@ class Board():
 class Move():
 	def __init__(self, board, position, mark):
 		board[position] = mark
-		self.state = str(board)
+		self.state = ''.join(board)
 		self.exploratory = False
 		self.previous_move = None
 		self.value = None
 
-	def update_values(self, next_move_value, alpha):
+	def update_values(self, next_move_value, alpha, state_dict):
 		# TD learning value update
-		self.value = self.value + alpha * (next_move_value - self.value)
+		if not self.exploratory:
+			self.value = self.value + alpha * (next_move_value - self.value)
+			state_dict[self.state] = self.value
 		# recursively updates value of every move
-		self.previous_move.update_values(self.value, alpha)
+		if self.previous_move != None:
+			self.previous_move.update_values(self.value, alpha, state_dict)
 
 	def set_previous_move(self, move):
 		self.previous_move = move

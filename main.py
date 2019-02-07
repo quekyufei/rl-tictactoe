@@ -22,7 +22,7 @@ def main(argv):
 
 		while True:
 			move = turn.get_move(board)
-			board.make_move(move, turn.mark)
+			board.make_move(move)
 
 			if board.has_winner():
 				print('Game ' + str(i+1) + ' over! Winner is: ' + turn.mark)
@@ -49,13 +49,16 @@ def get_player(player, mark):
 		return HumanPlayer(mark)
 
 	elif player == 'S':
-		return SimpleRlBot(mark, 0.001, 'data_files/' + mark + '_player.pickle')
+		return SimpleRlBot(mark, 0.01, 'data_files/' + mark + '_player.pickle')
+
+	elif player == 'R':
+		return RandomPlayer(mark)
 
 if __name__ == '__main__':
 	# command line usage: python3 filename.py player1 player2 num_iterations
 
 	# H = Human, S = Simple
-	valid_players = ['H', 'S']
+	valid_players = ['H', 'S', 'R']
 
 	try:
 		player1 = sys.argv[1].upper()

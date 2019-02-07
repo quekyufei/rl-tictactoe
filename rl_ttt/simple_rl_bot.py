@@ -26,15 +26,20 @@ class SimpleRlBot(Player):
 			self.state_dict = pickle.load(f)
 
 	def get_move(self, board):
-		legal_moves = board.get_legal_moves()
+		legal_moves = board.get_legal_moves(self.mark)
 
 		# get list of all states with the highest value 
 		best_states = self.get_best_states(legal_moves)
 
 		# randomly choose a state if there are ties in value
-		choice = random.choice(best_states)[0]
-		
-		self.move_history.append(self.move_and_get_string(board.board, choice))
+		choice = random.choice(best_states)
+
+		# set up link to previous move
+		choice.set_previous_move(self.last_move)
+		self.last_move = choice
+
+		# TODO test and remove
+		# self.move_history.append(self.move_and_get_string(board.board, choice))
 
 		# returns chosen move
 		return choice
@@ -60,7 +65,7 @@ class SimpleRlBot(Player):
 				self.state_dict[state] = 0.5
 				move.value = 0.5
 
-			if len(score_list) == 0:
+			if len(best_moves_list) == 0:
 				best_moves_list.append(move)
 			else:
 				# if the current state's score is more than the score of the Moves in the list
@@ -73,10 +78,11 @@ class SimpleRlBot(Player):
 
 		return best_moves_list
 
-	def move_and_get_string(self, board, move):
-		tmp = list(board)
-		tmp[move] = self.mark
-		return str(tmp)
+	# TODO test and remove
+	# def move_and_get_string(self, board, move):
+	# 	tmp = list(board)
+	# 	tmp[move] = self.mark
+	# 	return str(tmp)
 
 	def game_ended(self, result):
 		'''
@@ -86,16 +92,15 @@ class SimpleRlBot(Player):
 		Player.game_ended(self, result)
 
 		if result == 'win':
-			multiplier = 1
+			end_value = 1
 		elif result == 'loss':
-			multiplier = -1
+			end_value = 0
 		else:
-			multiplier = -0.1
+			end_value = 0.5
 
-		for move in self.move_history:
-			self.state_dict[move] += multiplier * self.learning_rate
+		self.last_move.update_values(end_value, self.learning_rate, self.state_dict)
 
-		self.move_history = []
+		self.last_move = None
 
 	def all_done(self):
 		self.save_dictionary()
