@@ -25,7 +25,7 @@ class SimpleRlBot(Player):
 		self.learning_rate = learning_rate
 		self.pickle_file = pickle_file
 		# TODO perhaps decaying epsilon?
-		self.epsilon = 0.01
+		self.epsilon = 0.05
 
 		with open(self.pickle_file, 'rb') as f:
 			self.state_dict = pickle.load(f)
@@ -38,7 +38,9 @@ class SimpleRlBot(Player):
 		if do_explore:
 			# epsilon greedy method. Choosing random exploratory move
 			choice = random_choice(legal_moves)
-			choice.set_exploratory(True)
+			choice = self.get_value(choice)
+			if self.last_move:
+				self.last_move.set_exploratory(True)
 
 		else:
 			# get list of all states with the highest value 
@@ -67,14 +69,8 @@ class SimpleRlBot(Player):
 		best_moves_list = []
 
 		for move in legal_moves:
-			# retrieve score from dictionary; if entry does not exist, initialise with value of 0.5
-			state = move.state
-			if state in self.state_dict:
-				move.value = self.state_dict[state]
-			else:
-				self.state_dict[state] = 0.5
-				move.value = 0.5
-
+			move = self.get_value(move)
+			
 			if len(best_moves_list) == 0:
 				best_moves_list.append(move)
 			else:
@@ -87,6 +83,16 @@ class SimpleRlBot(Player):
 				# else do nothing
 
 		return best_moves_list
+
+	def get_value(self, move):
+		# retrieve score from dictionary; if entry does not exist, initialise with value of 0.5
+		if move.state in self.state_dict:
+				move.value = self.state_dict[move.state]
+		else:
+			self.state_dict[move.state] = 0.5
+			move.value = 0.5
+
+		return move
 
 	def game_ended(self, result):
 

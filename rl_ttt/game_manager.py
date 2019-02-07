@@ -70,8 +70,7 @@ class Move():
 		if not self.exploratory:
 			self.value = self.value + alpha * (next_move_value - self.value)
 			state_dict[self.state] = self.value
-		else:
-			self.value = next_move_value
+
 		# recursively updates value of every move
 		if self.previous_move != None:
 			self.previous_move.update_values(self.value, alpha, state_dict)
